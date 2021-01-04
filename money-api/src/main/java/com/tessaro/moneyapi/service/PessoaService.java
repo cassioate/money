@@ -64,7 +64,7 @@ public class PessoaService {
 	
 				/* Metodos */
 	
-	private Pessoa buscarPessoaPeloId(Long id) {
+	public Pessoa buscarPessoaPeloId(Long id) {
 		Pessoa pessoaSalva = repository.findById(id).get();
 		if (pessoaSalva == null) {
 			throw new EntityNotFoundException();

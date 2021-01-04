@@ -2,6 +2,7 @@ package com.tessaro.moneyapi.resource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,9 +11,14 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,15 +29,21 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tessaro.moneyapi.event.RecursoCriadoEvent;
+import com.tessaro.moneyapi.exceptionhandler.Erro;
 import com.tessaro.moneyapi.model.Lancamento;
 import com.tessaro.moneyapi.model.enumeration.LancamentoEnum;
+import com.tessaro.moneyapi.repository.filter.LancamentoFilter;
 import com.tessaro.moneyapi.service.LancamentoService;
+import com.tessaro.moneyapi.service.exception.InexistenteOuInativoException;
 
 import javassist.NotFoundException;
 
 @RestController
 @RequestMapping("/lancamentos")
 public class LancamentoResource {
+	
+	@Autowired
+	private MessageSource messageSource;
 
 	@Autowired
 	private LancamentoService service;
@@ -40,8 +52,8 @@ public class LancamentoResource {
 	private ApplicationEventPublisher publisher; /* Utilizado para publicar o URI que é criado no RecursoCriadoEvent*/
 	
 	@GetMapping
-	public List<Lancamento> findAll() {
-		return service.findAll();
+	public Page<Lancamento> buscar(LancamentoFilter lancamentoFilter, Pageable pageable) {
+		return service.buscar(lancamentoFilter, pageable);
 	}
 	
 	@GetMapping(value = "/{id}")
@@ -112,6 +124,7 @@ public class LancamentoResource {
 	}
 	
 	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long id) {
 		service.remover(id);
 	}
@@ -119,6 +132,15 @@ public class LancamentoResource {
 	@PutMapping("/{id}/{propriedade}")
 	public void atualizarErrado(@PathVariable Long id, @PathVariable String propriedade) throws NotFoundException{
 		throw new NotFoundException("varaivel não existe");
+	}
+	
+	/* Por ser uma regra de negocio coloquei no proprio controller, para nao bagunçar o handler */
+	@ExceptionHandler({InexistenteOuInativoException.class})
+	public ResponseEntity<Object> handleInexistenteOuInativoException (InexistenteOuInativoException ex) {
+		String mensagemDev = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
+		String mensagemUsuario = messageSource.getMessage("inexistente.ou-inativo", null, LocaleContextHolder.getLocale());
+		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDev));
+		return ResponseEntity.badRequest().body(erros);
 	}
 	
 }

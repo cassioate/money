@@ -2,13 +2,14 @@ package com.tessaro.moneyapi.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.tessaro.moneyapi.model.Categoria;
@@ -18,6 +19,8 @@ import com.tessaro.moneyapi.model.enumeration.LancamentoEnum;
 import com.tessaro.moneyapi.repository.CategoriaRepository;
 import com.tessaro.moneyapi.repository.LancamentoRepository;
 import com.tessaro.moneyapi.repository.PessoaRepository;
+import com.tessaro.moneyapi.repository.filter.LancamentoFilter;
+import com.tessaro.moneyapi.service.exception.InexistenteOuInativoException;
 
 @Service
 public class LancamentoService {
@@ -31,8 +34,8 @@ public class LancamentoService {
 	@Autowired
 	private PessoaRepository repositoryPessoa;
 	
-	public List<Lancamento> findAll() {
-		return repository.findAll();
+	public Page<Lancamento> buscar(LancamentoFilter lancamentoFilter, Pageable pageable) {
+		return repository.filtrar(lancamentoFilter,pageable);
 	}
 	
 	public Optional<Lancamento> findById(Long id) {
@@ -40,6 +43,10 @@ public class LancamentoService {
 	}
 	
 	public Lancamento save(Lancamento lancamento) {
+		Pessoa pessoa = repositoryPessoa.findById(lancamento.getPessoa().getCodigo()).get();
+		if (pessoa == null || !pessoa.getAtivo() ) {
+			throw new InexistenteOuInativoException();
+		}
 		repository.save(lancamento);
 		return lancamento;
 	}

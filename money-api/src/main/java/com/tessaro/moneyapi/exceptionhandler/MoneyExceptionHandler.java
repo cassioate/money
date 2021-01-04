@@ -34,7 +34,7 @@ public class MoneyExceptionHandler extends ResponseEntityExceptionHandler {
 	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
 			HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-		String mensagemDev = ex.getCause().toString();
+		String mensagemDev = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
 		String mensagemUsuario = messageSource.getMessage("mensagem.invalida", null, LocaleContextHolder.getLocale());
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDev));
 		return handleExceptionInternal(ex, erros, headers, status, request);
@@ -52,7 +52,7 @@ public class MoneyExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler ({EmptyResultDataAccessException.class})
 //	@ResponseStatus(HttpStatus.NOT_FOUND)  <- é uma maneira de retornar o Status sem precisar ter um retorno no metodo.
 	public ResponseEntity<Object> handleEmptyResultDataAccessException(EmptyResultDataAccessException ex, WebRequest request) {
-		String mensagemDev = ex.toString(); /* <- Nesse caso nao foi utilizado o ex.getCause().toString(), devido ao EmptyResulData... já ser uma exceção que é a causa, então nao se torna necessario o getCause()*/
+		String mensagemDev = ex.getCause() != null ? ex.getCause().toString() : ex.toString(); /* <- Nesse caso nao foi utilizado o ex.getCause().toString(), devido ao EmptyResulData... já ser uma exceção que é a causa, então nao se torna necessario o getCause()*/
 		String mensagemUsuario = messageSource.getMessage("objeto.inexistente", null, LocaleContextHolder.getLocale());
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDev));
 		return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
@@ -60,7 +60,7 @@ public class MoneyExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler ({NoSuchElementException.class})
 	public ResponseEntity<Object> handleNoSuchElementException(NoSuchElementException ex, WebRequest request) {
-		String mensagemDev = ex.toString();
+		String mensagemDev = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
 		String mensagemUsuario = messageSource.getMessage("objeto.inexistente", null, LocaleContextHolder.getLocale());
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDev));
 		return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
@@ -68,7 +68,7 @@ public class MoneyExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler ({NotFoundException.class})
 	public ResponseEntity<Object> handleObjetoNaoEncontrado(NotFoundException ex, WebRequest request) {
-		String mensagemDev = ex.toString();
+		String mensagemDev = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
 		String mensagemUsuario = messageSource.getMessage("variavel.inexistente", null, LocaleContextHolder.getLocale());
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDev));
 		return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
@@ -77,7 +77,7 @@ public class MoneyExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler ({DataIntegrityViolationException.class})
 	public ResponseEntity<Object> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
-		String mensagemDev = ex.toString();
+		String mensagemDev = ex.getCause() != null ? ex.getCause().toString() : ex.toString();
 		String mensagemUsuario = messageSource.getMessage("nao.existe.na.base", null, LocaleContextHolder.getLocale());
 		List<Erro> erros = Arrays.asList(new Erro(mensagemUsuario, mensagemDev));
 		return handleExceptionInternal(ex, erros, new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
