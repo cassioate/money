@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,17 +52,20 @@ public class LancamentoResource {
 	@Autowired
 	private ApplicationEventPublisher publisher; /* Utilizado para publicar o URI que é criado no RecursoCriadoEvent*/
 	
+	@PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
 	@GetMapping
 	public Page<Lancamento> buscar(LancamentoFilter lancamentoFilter, Pageable pageable) {
 		return service.buscar(lancamentoFilter, pageable);
 	}
 	
+	@PreAuthorize("hasRole('USER') OR hasRole('ADMIN')")
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Optional<Lancamento>> findById(@PathVariable Long id) {
 		Optional<Lancamento> lancamento = service.findById(id);
 		return !lancamento.isEmpty() ? ResponseEntity.ok().body(lancamento) : ResponseEntity.notFound().build(); /* se a lancamento existir então ele retornarar o que foi encontrado na busca, caso contrario ele retornarar Not Found (404) * .build() irá trazer o um response sem corpo (Que é necessario vir).  */
 	}
-
+	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping
 	public ResponseEntity<Lancamento> save (@Valid @RequestBody Lancamento lancamento, HttpServletResponse response) {
 		Lancamento lancamentoSalva = service.save(lancamento);
@@ -69,66 +73,77 @@ public class LancamentoResource {
 		return ResponseEntity.status(HttpStatus.CREATED).body(lancamentoSalva);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}")
 	public ResponseEntity<Lancamento> atualizar(@PathVariable Long id, @Valid @RequestBody Lancamento lancamento){
 		Lancamento lancamentoSalva = service.atualizar(id, lancamento);
 		return ResponseEntity.ok(lancamentoSalva);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/descricao")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarDescricao(@PathVariable Long id, @RequestBody String variavel){
 		service.atualizarPropriedadeDescricao(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/dataVencimento")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarAtivo(@PathVariable Long id, @RequestBody LocalDate variavel){
 		service.atualizarPropriedadeDataVencimento(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/dataPagamento")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarDataPagamento(@PathVariable Long id, @RequestBody LocalDate variavel){
 		service.atualizarPropriedadeDataPagamento(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/valor")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarValor(@PathVariable Long id, @RequestBody BigDecimal variavel){
 		service.atualizarPropriedadeValor(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/observacao")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarObservacao(@PathVariable Long id, @RequestBody String variavel){
 		service.atualizarPropriedadeObservacao(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/tipo")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarTipo(@PathVariable Long id, @RequestBody LancamentoEnum variavel){
 		service.atualizarPropriedadeTipo(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/pessoa")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarPessoa(@PathVariable Long id, @RequestBody Long variavel){
 		service.atualizarPropriedadePessoa(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/categoria")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void atualizarCategoria(@PathVariable Long id, @RequestBody Long variavel){
 		service.atualizarPropriedadeCategoria(id, variavel);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void remover(@PathVariable Long id) {
 		service.remover(id);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PutMapping("/{id}/{propriedade}")
 	public void atualizarErrado(@PathVariable Long id, @PathVariable String propriedade) throws NotFoundException{
 		throw new NotFoundException("varaivel não existe");
